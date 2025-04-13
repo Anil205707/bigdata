@@ -14,11 +14,11 @@ def home():
             parser = QueryParser("abstract", index.schema)
             myquery = parser.parse(query)
             search_results = searcher.search(myquery, limit=10)
-            # Copy necessary data before closing the searcher
-            results = [
-                {"title": hit["title"], "abstract": hit["abstract"]}
-                for hit in search_results
-            ]
+            results = []
+            for hit in search_results:
+                title = hit.get("title", "No title")
+                abstract = hit.get("abstract", "No abstract available")
+                results.append({"title": title, "abstract": abstract})
     return render_template("index.html", results=results)
 
 if __name__ == "__main__":
