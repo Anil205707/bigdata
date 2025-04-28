@@ -1,22 +1,24 @@
-from whoosh.fields import Schema, TEXT, ID
+import os
+import json
+from whoosh.fields import Schema, TEXT
 from whoosh.index import create_in
-import os, json
 
-# Define the schema (structure of each document)
-schema = Schema(id=ID(stored=True), title=TEXT(stored=True), abstract=TEXT(stored=True))
+def create_index():
+    # Define schema
+    schema = Schema(id=TEXT(stored=True), title=TEXT(stored=True), abstract=TEXT(stored=True))
 
+    # Create search_index folder if it doesn't exist
+    if not os.path.exists("search_index"):
+        os.mkdir("search_index")
 
-# Create index folder if not exists
-if not os.path.exists("search_index"):
-    os.mkdir("search_index")
+    # Create index
+    ix = create_in("search_index", schema)
+    writer = ix.writer()
 
-# Create the index
-ix = create_in("search_index", schema)
-writer = ix.writer()
+    # Load COVID-19 dataset
+    with open("data/covid19_sample_500.json", "r", encoding="utf-8") as f:
+        articles = json.load(f)
 
-# Load your sample dataset
-with open("data/cord19_sample.json", "r", encoding="utf-8") as f:
-    articles = json.load(f)
     for i, article in enumerate(articles):
         writer.add_document(
             id=str(i),
@@ -24,5 +26,9 @@ with open("data/cord19_sample.json", "r", encoding="utf-8") as f:
             abstract=article.get("abstract", "")
         )
 
-writer.commit()
-print("Search index created successfully!")
+    writer.commit()
+    print("✅ Search index created successfully!")
+
+
+if __name__ == "__main__":
+    create_index()
